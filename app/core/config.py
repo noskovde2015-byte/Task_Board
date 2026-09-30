@@ -10,7 +10,8 @@ class RunConfig(BaseModel):
 
 
 class ApiPrefix(BaseModel):
-    pass
+    prefix: str = "/api"
+    login: str = "/login"
 
 
 class DataBaseConfig(BaseModel):
@@ -21,16 +22,25 @@ class DataBaseConfig(BaseModel):
     max_overflow: int = 10
 
 
+class JWTConfig(BaseModel):
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
+    refresh_token_expire_days: int
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent / ".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
         env_prefix="APP_CONFIG__",
-        env_nested_delimiter="__"
+        env_nested_delimiter="__",
     )
+    prefix: ApiPrefix = ApiPrefix()
     run: RunConfig = RunConfig()
     db: DataBaseConfig
+    auth: JWTConfig
 
 
 settings = Settings()
