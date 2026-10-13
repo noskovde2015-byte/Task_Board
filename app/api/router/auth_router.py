@@ -18,7 +18,7 @@ from core.config import settings
 router = APIRouter(prefix=settings.prefix.login, tags=["Login"])
 
 
-@router.post("/")
+@router.post("")
 async def login(
     user_data: UserAuth,
     response: Response,
