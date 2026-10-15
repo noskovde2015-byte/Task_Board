@@ -13,6 +13,7 @@ class ApiPrefix(BaseModel):
     prefix: str = "/api"
     login: str = "/login"
     register: str = "/register"
+    users: str = "/users"
 
 
 class DataBaseConfig(BaseModel):
