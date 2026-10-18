@@ -16,3 +16,6 @@ async def get_my_boards(current_user: User, session: AsyncSession) -> Sequence[B
     )
     result = await session.execute(stmt)
     return result.scalars().all()
+
+
+async def create_new_board(current_user: User, session: AsyncSession) -> Board:
