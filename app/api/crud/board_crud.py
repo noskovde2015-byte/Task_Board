@@ -2,8 +2,10 @@ from typing import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+
+from core.models.board_column_model import BoardColumn
 from core.models.board_model import Board
-from core.models.board_member import BoardMember
+from core.models.board_member import BoardMember, BoardRole
 from core.models.user_model import User
 
 
@@ -18,4 +20,30 @@ async def get_my_boards(current_user: User, session: AsyncSession) -> Sequence[B
     return result.scalars().all()
 
 
-async def create_new_board(current_user: User, session: AsyncSession) -> Board:
+DEFAULT_COLUMNS = ["To Do", "In Progress", "Done"]
+
+
+async def create_new_board(
+    title: str, is_public: bool, current_user: User, session: AsyncSession
+) -> Board:
+    new_board = Board(title=title, is_public=is_public, owner_id=current_user.id)
+    session.add(new_board)
+    await session.flush()
+
+    session.add(
+        BoardMember(
+            board_id=new_board.id, user_id=current_user.id, role=BoardRole.OWNER
+        )
+    )
+    session.add_all(
+        [
+            BoardColumn(
+                board_id=new_board.id, title=name, position=(index + 1) * 1000.0
+            )
+            for index, name in enumerate(DEFAULT_COLUMNS)
+        ]
+    )
+
+    await session.commit()
+    await session.refresh(new_board)
+    return new_board
