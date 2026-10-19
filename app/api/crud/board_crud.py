@@ -1,5 +1,6 @@
 from typing import Sequence
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -47,3 +48,29 @@ async def create_new_board(
     await session.commit()
     await session.refresh(new_board)
     return new_board
+
+
+async def can_view(board: Board, user: User | None, session: AsyncSession) -> bool:
+    if board.is_public:
+        return True
+    if user is None:
+        return False
+
+    stmt = select(BoardMember.id).where(
+        BoardMember.board_id == board.id,
+        BoardMember.user_id == user.id,
+    )
+    member_id = await session.scalar(stmt)
+    return member_id is not None
+
+
+async def can_edit(board: Board, user: User | None, session: AsyncSession) -> bool:
+    if user is None:
+        return False
+
+    stmt = select(BoardMember.id).where(
+        BoardMember.board_id == board.id,
+        BoardMember.user_id == user.id,
+    )
+    member_id = await session.scalar(stmt)
+    return member_id is not None
